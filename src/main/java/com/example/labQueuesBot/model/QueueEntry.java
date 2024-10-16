@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity(name = "queue_entry")
 @Setter
 @Getter
@@ -19,7 +21,7 @@ public class QueueEntry {
     private User user;
 
     private Long chatId;
-    private int labCount;
+    private int labNumber;
     private int position;
-
+    private LocalDateTime bookingTime;
 }

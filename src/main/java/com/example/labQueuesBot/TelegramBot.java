@@ -36,11 +36,12 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private Map<Long, String> currentStates = new HashMap<>();
     private Map<Long, Subject> subjectCreationStates = new HashMap<>();
+    private String selectedSubject;  // Предмет, который выбрал пользователь
+    private boolean waitingForLabNumber = false;
 
     public TelegramBot() {
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "Начать работу с ботом"));
-        listOfCommands.add(new BotCommand("/help", "Информация о командах"));
         try {
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
@@ -67,14 +68,24 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             try {
 
-                if (queueService.findSubjectByName(messageText) != null) {
-                    String subjectName = messageText;
+                if (waitingForLabNumber) {
                     try {
-                        int position = queueService.addUserToQueue(chatId, subjectName, 1);
-                        sendMessage(chatId, "Вы успешно заняли " + position + "-ю позицию в очереди на предмет: " + subjectName);
-                    } catch (IllegalStateException e) {
-                        sendMessage(chatId, e.getMessage());
+                        int labNumber = Integer.parseInt(messageText);
+                        int position = queueService.addUserToQueue(chatId, selectedSubject, labNumber);
+                        sendMessage(chatId, "Вы успешно заняли " + position + "-ю позицию в очереди на предмет: " + selectedSubject + " с номером лабораторной работы: " + labNumber);
+
+                        // Сбрасываем флаг ожидания и очищаем временное поле
+                        waitingForLabNumber = false;
+                        selectedSubject = null;
+                    } catch (NumberFormatException e) {
+                        sendMessage(chatId, "Пожалуйста, введите корректный номер лабораторной работы.");
                     }
+                }
+                // Если пользователь выбрал предмет
+                else if (queueService.findSubjectByName(messageText) != null) {
+                    selectedSubject = messageText;  // Сохраняем выбранный предмет
+                    waitingForLabNumber = true;  // Устанавливаем флаг ожидания номера лабораторной
+                    sendMessage(chatId, "Введите номер лабораторной работы, которую хотите сдать:");
                 }
 
                 else if (currentStates.containsKey(chatId)) {
@@ -277,6 +288,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                         response.append(entry.getPosition())
                                 .append(". @")
                                 .append(entry.getUser().getUserName() != null ? entry.getUser().getUserName() : "аноним")
+                                .append(" - " + entry.getLabNumber() + "-ю лабу")
                                 .append("\n");
                     }
                 }

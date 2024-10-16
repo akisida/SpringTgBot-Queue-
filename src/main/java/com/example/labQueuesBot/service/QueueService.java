@@ -9,6 +9,7 @@ import com.example.labQueuesBot.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class QueueService {
     public Subject findSubjectByName(String name){
         return subjectRepository.findByName(name);
     }
-    public int addUserToQueue(Long chatId, String subjectName, int labCount) {
+    public int addUserToQueue(Long chatId, String subjectName, int labNumber) {
         User user = userRepository.findById(chatId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         Subject subject = subjectRepository.findByName(subjectName);
 
@@ -62,9 +63,9 @@ public class QueueService {
         QueueEntry entry = new QueueEntry();
         entry.setSubject(subject);
         entry.setUser(user);
-        entry.setLabCount(labCount);
+        entry.setLabNumber(labNumber);
         entry.setPosition(currentPosition);
-
+        entry.setBookingTime(LocalDateTime.now());
         queueEntryRepository.save(entry);
         return currentPosition;
     }
