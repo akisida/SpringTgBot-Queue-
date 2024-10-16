@@ -20,6 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
+import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -55,8 +56,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     @Override
-    public String getBotToken() {
-        return "7292446344:AAGFVvXdc1VRijPz3H8R1xI5onDnQY8Ayy0";
+    public String getBotToken() throws IOException {
+        return new SystemProps().F_getBotToken();
     }
 
     @Override
